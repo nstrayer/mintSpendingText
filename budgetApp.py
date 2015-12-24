@@ -1,8 +1,9 @@
+#!/usr/bin/python
+
+import mintapi
 # A quick script to scape mint, figure out how much was spent the last day,
 # then send that amount to the user in a text message.
 # Written by Nick Strayer on Dec 23, 2015
-
-import mintapi
 
 #load in usernames and passwords.
 mintPass      = open('mintPass.txt', 'r').readline().rstrip()
