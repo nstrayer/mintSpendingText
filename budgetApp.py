@@ -1,6 +1,13 @@
 #!/usr/bin/python
 
 import mintapi
+from datetime import date, timedelta
+# # Stuff to send message
+import smtplib
+import time
+from time import gmtime, strftime, localtime
+
+
 # A quick script to scape mint, figure out how much was spent the last day,
 # then send that amount to the user in a text message.
 # Written by Nick Strayer on Dec 23, 2015
@@ -19,13 +26,13 @@ mint = mintapi.Mint(mintEmail, mintPass)
 transactions = mint.get_transactions()
 
 #get the day and yesterday to find spending over the last day.
-from datetime import date, timedelta
 yesterday = date.today() - timedelta(days=1)
 dayBefore = yesterday - timedelta(days=1)
 
 # Ignore Chase Epay, transfer/credit card payment transactions, and rent payments.
-typeMask = (transactions['description'] != "Chase Epay") & (transactions['description'] != "Bell Midtown Pmts") \
-    & (transactions['category'] != "credit card payment") & (transactions['category'] != "transfer")
+typeMask = (transactions['description'] != "Chase Epay") & (transactions['description'] != "Olympus Midtown Pmts") \
+    & (transactions['category'] != "credit card payment") & (transactions['category'] != "transfer") \
+    & (transactions['transaction_type'] != "credit")
 
 #First get rid of the transactions we don't want
 totalSpending = transactions.loc[typeMask]
@@ -49,17 +56,13 @@ beginingOfMonth = yesterday - timedelta(days= (yesterday.day - 1) )
 monthMask       = (totalSpending['date'] > beginingOfMonth) & (totalSpending['date'] <= yesterday)
 monthSpending   = totalSpending.loc[monthMask].amount.sum()
 
+#look into adding the ability to accound for payments.
+
 #Subtract this amount from my desired spending amount
 budgetLeft = monthlySpending - monthSpending
 
 #calculate how much on average I need to spend for the remaining days.
-dailySpending = budgetLeft/(daysInMonth - yesterday.day)
-
-
-# # Stuff to send message
-import smtplib
-import time
-from time import gmtime, strftime, localtime
+dailySpending = round(budgetLeft/(daysInMonth - yesterday.day), 2)
 
 
 def sendText(amount) :
